@@ -23,18 +23,18 @@ const CATEGORY_ICONS: Record<string, string> = {
 function StockBar({ item }: { item: PantryItem }) {
   const status = stockStatus(item);
   const pct = Math.min(100, (item.quantity / item.initialQuantity) * 100);
-  const barColor = status === 'empty' ? 'bg-gray-200' : status === 'low' ? 'bg-amber-400' : 'bg-primary-500';
+  const barColor = status === 'empty' ? '#EFEBE5' : status === 'low' ? '#F5C09A' : '#6B9E7A';
   return (
     <div className="mt-1.5">
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#EFEBE5' }}>
+        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
       </div>
       <div className="flex justify-between mt-0.5">
-        <span className="text-[10px] text-gray-400">
+        <span className="text-[10px]" style={{ color: '#9C9485' }}>
           {item.quantity} / {item.initialQuantity} {item.unit}
         </span>
-        {status === 'low' && <span className="text-[10px] text-amber-600 font-medium">Scorta bassa</span>}
-        {status === 'empty' && <span className="text-[10px] text-red-500 font-medium">Esaurito</span>}
+        {status === 'low' && <span className="text-[10px] font-medium" style={{ color: '#B06010' }}>Scorta bassa</span>}
+        {status === 'empty' && <span className="text-[10px] font-medium text-red-500">Esaurito</span>}
       </div>
     </div>
   );
@@ -51,45 +51,43 @@ function ItemCard({ item, onEdit, onDelete, onAdjustQty }: {
     ? new Date(item.expiryDate) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
     : false;
   const step = item.unit === 'g' || item.unit === 'ml' ? 50 : 1;
+  const borderColor = status === 'empty' ? '#fecaca' : status === 'low' ? '#F5C09A' : '#EFEBE5';
 
   return (
-    <div className={`bg-white rounded-2xl border transition-all shadow-sm ${
-      status === 'empty' ? 'border-red-100' : status === 'low' ? 'border-amber-100' : 'border-gray-100'
-    }`}>
+    <div className="bg-white rounded-2xl transition-all shadow-warm-sm" style={{ border: `1px solid ${borderColor}` }}>
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold text-gray-900 text-sm">{item.name}</span>
+              <span className="font-semibold text-sm" style={{ color: '#1A1812' }}>{item.name}</span>
               {isExpiringSoon && (
-                <span className="text-[10px] bg-red-50 text-red-600 border border-red-200 px-1.5 py-0.5 rounded-full">
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#fee2e2', color: '#dc2626' }}>
                   Scade presto
                 </span>
               )}
             </div>
-            {/* Prezzo medio */}
             {item.avgPrice != null && (
-              <p className="text-[11px] text-gray-400 mt-0.5">
+              <p className="text-[11px] mt-0.5" style={{ color: '#9C9485' }}>
                 € {item.avgPrice.toFixed(2)} / {item.unit}
                 {item.priceHistory.length > 1 && (
-                  <span className="text-gray-300 ml-1">· media {item.priceHistory.length} acq.</span>
+                  <span className="ml-1" style={{ color: '#D7D1C5' }}>· media {item.priceHistory.length} acq.</span>
                 )}
               </p>
             )}
             {item.expiryDate && (
-              <p className="text-[11px] text-gray-400 mt-0.5">
+              <p className="text-[11px] mt-0.5" style={{ color: '#9C9485' }}>
                 Scade: {new Date(item.expiryDate).toLocaleDateString('it-IT')}
               </p>
             )}
             <StockBar item={item} />
           </div>
           <div className="flex flex-col gap-1 shrink-0">
-            <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition">
+            <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg transition" style={{ color: '#9C9485' }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </button>
-            <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-300 hover:text-red-400 transition">
+            <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg transition text-red-300 hover:text-red-400">
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
@@ -98,11 +96,13 @@ function ItemCard({ item, onEdit, onDelete, onAdjustQty }: {
         </div>
         <div className="flex items-center gap-2 mt-2.5">
           <button onClick={() => onAdjustQty(item.id, -step)} disabled={item.quantity === 0}
-            className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 disabled:opacity-40 flex items-center justify-center transition font-bold text-gray-600">−</button>
-          <span className="text-sm font-semibold text-gray-700 min-w-[60px] text-center">{item.quantity} {item.unit}</span>
+            className="w-8 h-8 rounded-xl disabled:opacity-40 flex items-center justify-center transition font-bold"
+            style={{ background: '#EFEBE5', color: '#3F3B30' }}>−</button>
+          <span className="text-sm font-semibold min-w-[60px] text-center" style={{ color: '#3F3B30' }}>{item.quantity} {item.unit}</span>
           <button onClick={() => onAdjustQty(item.id, step)}
-            className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition font-bold text-gray-600">+</button>
-          <span className="text-[10px] text-gray-400 ml-auto">±{step}{item.unit}</span>
+            className="w-8 h-8 rounded-xl flex items-center justify-center transition font-bold"
+            style={{ background: '#EFEBE5', color: '#3F3B30' }}>+</button>
+          <span className="text-[10px] ml-auto" style={{ color: '#9C9485' }}>±{step}{item.unit}</span>
         </div>
       </div>
     </div>
@@ -243,85 +243,77 @@ export default function DispensaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen pb-28" style={{ background: '#FBFAF8' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-10" style={{ borderBottom: '1px solid #EFEBE5' }}>
         <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Dispensa</h1>
-              <p className="text-xs text-gray-400">{items.length} aliment{items.length === 1 ? 'o' : 'i'}</p>
+              <h1 className="font-serif text-[22px] font-bold" style={{ color: '#1A1812' }}>La dispensa</h1>
+              <p className="text-xs" style={{ color: '#9C9485' }}>{items.length} aliment{items.length === 1 ? 'o' : 'i'}</p>
             </div>
-          </div>
-
-          {/* CTAs */}
-          <div className="mb-3">
             <button
               onClick={handleReceiptClick}
               disabled={isParsingReceipt}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-semibold rounded-2xl transition shadow-sm mb-2"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-white text-xs font-semibold transition"
+              style={{ background: '#1A1812' }}
             >
               {isParsingReceipt ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Analisi scontrino... {parseProgress.total > 1 ? `(${parseProgress.done}/${parseProgress.total})` : ''}
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {parseProgress.total > 1 ? `${parseProgress.done}/${parseProgress.total}` : 'Analisi...'}
                 </>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Aggiungi scontrino
+                  Scontrino
                 </>
               )}
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
-              multiple
-              className="hidden"
-              onChange={handleReceiptFiles}
-            />
-            <div className="text-center">
-              <button
-                onClick={() => { setEditingItem(null); setShowSheet(true); }}
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium underline-offset-2 hover:underline transition"
-              >
-                Aggiungi manualmente
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="hidden" onChange={handleReceiptFiles} />
+
+          {/* Low stock alert */}
+          {lowCount > 0 && (
+            <div className="flex items-center gap-2 rounded-2xl px-3 py-2.5 mb-3" style={{ background: '#FEF3E8', border: '1px solid #F5C09A' }}>
+              <span className="text-sm">⚠️</span>
+              <span className="text-xs font-medium" style={{ color: '#8C4B20' }}>{lowCount} ingredient{lowCount === 1 ? 'e' : 'i'} in esaurimento</span>
+              <button onClick={() => setFilterLow(!filterLow)} className="ml-auto text-xs font-semibold" style={{ color: '#E07A5F' }}>
+                {filterLow ? 'Mostra tutti' : 'Filtra'}
               </button>
             </div>
-            {receiptError && (
-              <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-xl mt-2">{receiptError}</p>
-            )}
-          </div>
+          )}
+
+          {receiptError && (
+            <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-xl mb-3">{receiptError}</p>
+          )}
 
           {/* Search */}
           <div className="relative mb-3">
-            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#9C9485' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
               type="search" value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Cerca alimento..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-gray-100 border-transparent focus:border-primary-300 focus:bg-white focus:ring-2 focus:ring-primary-100 outline-none transition text-sm"
+              placeholder="Cerca ingrediente..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none transition"
+              style={{ background: '#EFEBE5', border: 'none', color: '#1A1812' }}
             />
           </div>
 
-          {/* Filter bar */}
+          {/* Category filter pills */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            <button onClick={() => setFilterLow(!filterLow)}
-              className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                filterLow ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-200 text-gray-600'
-              }`}>
-              ⚠️ Scorte basse {lowCount > 0 && <span className="bg-white/30 px-1 rounded-full">{lowCount}</span>}
-            </button>
             {(['Tutto', 'Cereali & pasta', 'Legumi', 'Verdure & ortaggi', 'Frutta', 'Carne & pesce', 'Latticini & uova', 'Condimenti & oli', 'Bevande', 'Altro'] as const).map(cat => (
               <button key={cat} onClick={() => setFilterCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  filterCategory === cat ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-600 hover:border-primary-300'
-                }`}>
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all shadow-warm-sm"
+                style={{
+                  background: filterCategory === cat ? '#1A1812' : 'white',
+                  color: filterCategory === cat ? 'white' : '#9C9485',
+                  whiteSpace: 'nowrap',
+                }}>
                 {cat !== 'Tutto' ? `${CATEGORY_ICONS[cat]} ` : ''}{cat}
               </button>
             ))}
@@ -333,21 +325,26 @@ export default function DispensaPage() {
       <div className="max-w-lg mx-auto px-4 pt-4">
         {loading && (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#E07A5F', borderTopColor: 'transparent' }} />
           </div>
         )}
 
         {!loading && items.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-5xl mb-3">🛒</div>
-            <h3 className="font-semibold text-gray-700 mb-1">Dispensa vuota</h3>
-            <p className="text-sm text-gray-400 mb-1">Fotografa uno scontrino o aggiungi manualmente</p>
+            <div className="text-5xl mb-3">📦</div>
+            <h3 className="font-serif font-semibold text-lg mb-1" style={{ color: '#3F3B30' }}>Dispensa vuota</h3>
+            <p className="text-sm mb-4" style={{ color: '#9C9485' }}>Fotografa uno scontrino o aggiungi manualmente</p>
+            <button onClick={() => { setEditingItem(null); setShowSheet(true); }}
+              className="px-4 py-2 rounded-full text-sm font-semibold text-white"
+              style={{ background: '#E07A5F' }}>
+              + Aggiungi manualmente
+            </button>
           </div>
         )}
 
         {!loading && items.length > 0 && filtered.length === 0 && (
           <div className="text-center py-10">
-            <p className="text-gray-400 text-sm">Nessun risultato per i filtri selezionati</p>
+            <p className="text-sm" style={{ color: '#9C9485' }}>Nessun risultato per i filtri selezionati</p>
           </div>
         )}
 
@@ -357,8 +354,8 @@ export default function DispensaPage() {
               <div key={category}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-base">{CATEGORY_ICONS[category]}</span>
-                  <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{category}</h2>
-                  <span className="text-xs text-gray-300">({catItems.length})</span>
+                  <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#9C9485' }}>{category}</h2>
+                  <span className="text-xs" style={{ color: '#D7D1C5' }}>({catItems.length})</span>
                 </div>
                 <div className="space-y-2">
                   {catItems.map(item => (
@@ -372,6 +369,15 @@ export default function DispensaPage() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Add manually button at bottom */}
+        {!loading && items.length > 0 && (
+          <button onClick={() => { setEditingItem(null); setShowSheet(true); }}
+            className="w-full mt-4 py-3 rounded-2xl text-sm font-medium transition flex items-center justify-center gap-2"
+            style={{ border: '2px dashed #D7D1C5', color: '#9C9485', background: 'transparent' }}>
+            + Aggiungi manualmente
+          </button>
         )}
       </div>
 

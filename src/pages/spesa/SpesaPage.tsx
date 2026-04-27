@@ -19,17 +19,20 @@ function ShoppingRow({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className={`flex items-center gap-3 bg-white rounded-2xl border shadow-sm px-3 py-3 transition-all ${
-      item.checked ? 'border-gray-100 opacity-55' : 'border-gray-100'
-    }`}>
+    <div className="flex items-center gap-3 bg-white rounded-2xl px-3 py-3 transition-all shadow-warm-sm"
+      style={{
+        border: `1px solid ${item.checked ? '#EFEBE5' : '#EFEBE5'}`,
+        opacity: item.checked ? 0.6 : 1,
+      }}>
       {/* Checkbox */}
       <button
         onClick={() => onToggle(item.id)}
-        className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-          item.checked
-            ? 'bg-primary-500 border-primary-500 text-white'
-            : 'border-gray-300 hover:border-primary-400'
-        }`}
+        className="w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all"
+        style={{
+          background: item.checked ? '#E07A5F' : 'transparent',
+          borderColor: item.checked ? '#E07A5F' : '#D7D1C5',
+          color: 'white',
+        }}
       >
         {item.checked && (
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,25 +44,24 @@ function ShoppingRow({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className={`text-sm font-medium ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+          <span className={`text-sm font-medium ${item.checked ? 'line-through' : ''}`}
+            style={{ color: item.checked ? '#9C9485' : '#1A1812' }}>
             {item.name}
           </span>
           {item.origin === 'auto' && (
-            <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium shrink-0">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0"
+              style={{ background: '#FEF3E8', color: '#B06010' }}>
               Auto
             </span>
           )}
         </div>
         {item.quantity != null && item.unit && (
-          <p className="text-xs text-gray-400 mt-0.5">{item.quantity} {item.unit}</p>
+          <p className="text-xs mt-0.5" style={{ color: '#9C9485' }}>{item.quantity} {item.unit}</p>
         )}
       </div>
 
       {/* Delete */}
-      <button
-        onClick={() => onDelete(item.id)}
-        className="p-1.5 rounded-lg hover:bg-red-50 text-gray-200 hover:text-red-400 transition shrink-0"
-      >
+      <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg transition shrink-0 text-red-200 hover:text-red-400">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -150,20 +152,21 @@ export default function SpesaPage() {
   })();
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen pb-28" style={{ background: '#FBFAF8' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-10" style={{ borderBottom: '1px solid #EFEBE5' }}>
         <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Lista della spesa</h1>
+              <h1 className="font-serif text-[22px] font-bold" style={{ color: '#1A1812' }}>Lista della spesa</h1>
               <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs" style={{ color: '#9C9485' }}>
                   {pending.length} da comprare
                   {autoCount > 0 && ` · ${autoCount} auto`}
                 </p>
                 {estimatedCost !== null && (
-                  <span className="text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: '#E4F0E8', color: '#3D6B4A' }}>
                     ~€{estimatedCost.toFixed(2)}
                   </span>
                 )}

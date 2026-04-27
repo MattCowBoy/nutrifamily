@@ -33,3 +33,4 @@ immosearch/
 # Firebase / secrets (already covered by *.local but explicit for clarity)
 .env.local
 .env*.local
+.vercel

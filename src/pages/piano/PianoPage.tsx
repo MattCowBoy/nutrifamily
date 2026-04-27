@@ -86,13 +86,14 @@ function buildCombinedSlots(
 
 // ─── ProfileBadge ─────────────────────────────────────────────────────────────
 
-function ProfileBadge({ name, avatar }: { name: string; avatar?: string }) {
+function ProfileBadge({ name }: { name: string; avatar?: string }) {
   return (
     <div className="flex items-center gap-1">
-      <div className={`w-4 h-4 rounded-full ${avatar ?? 'bg-gray-400'} flex items-center justify-center shrink-0`}>
-        <span className="text-[8px] text-white font-bold leading-none">{name[0].toUpperCase()}</span>
+      <div className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+        style={{ background: '#FDE8E2' }}>
+        <span className="text-[8px] font-bold leading-none" style={{ color: '#C0604A' }}>{name[0].toUpperCase()}</span>
       </div>
-      <span className="text-[10px] text-gray-500 font-medium">{name}</span>
+      <span className="text-[10px] font-medium" style={{ color: '#9C9485' }}>{name}</span>
     </div>
   );
 }
@@ -121,20 +122,29 @@ function MealCard({
 }) {
   const [expanded, setExpanded] = useState(false);
 
+  const mealTypeColors: Record<string, { bg: string; text: string }> = {
+    colazione:          { bg: '#FDE8E2', text: '#C0604A' },
+    spuntino_mattina:   { bg: '#FEF3E8', text: '#B06010' },
+    pranzo:             { bg: '#E4F0E8', text: '#3D6B4A' },
+    spuntino_pomeriggio:{ bg: '#FEF3E8', text: '#B06010' },
+    cena:               { bg: '#EDE9F6', text: '#5D5090' },
+  };
+  const typeColor = mealTypeColors[meal.type] ?? { bg: '#EFEBE5', text: '#3F3B30' };
+
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm transition-all ${
-      completed ? 'border-green-200 bg-green-50/30' : 'border-gray-100'
-    }`}>
+    <div className="bg-white rounded-2xl transition-all shadow-warm-sm"
+      style={{ border: `1px solid ${completed ? '#c3dfc9' : '#EFEBE5'}`, background: completed ? '#f9fdf9' : 'white' }}>
       <div className="p-3">
         <div className="flex items-start gap-2">
           {/* Checkbox */}
           <button
             onClick={onToggle}
-            className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-              completed
-                ? 'bg-green-500 border-green-500 text-white'
-                : 'border-gray-300 hover:border-green-400'
-            }`}
+            className="mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+            style={{
+              background: completed ? '#6B9E7A' : 'transparent',
+              borderColor: completed ? '#6B9E7A' : '#D7D1C5',
+              color: 'white',
+            }}
           >
             {completed && (
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,15 +156,16 @@ function MealCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="text-xs">{MEAL_ICONS[meal.type]}</span>
-              <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+              <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                style={{ background: typeColor.bg, color: typeColor.text }}>
                 {MEAL_TYPE_LABELS[meal.type]}
               </span>
             </div>
-            <p className={`text-sm font-semibold mt-0.5 ${completed ? 'line-through text-gray-400' : 'text-gray-900'}`}>
+            <p className={`text-sm font-semibold mt-1 ${completed ? 'line-through' : ''}`}
+              style={{ color: completed ? '#9C9485' : '#1A1812' }}>
               {meal.name}
             </p>
 
-            {/* Profili condivisi — mostrati sotto il nome */}
             {sharedProfiles && sharedProfiles.length > 1 && (
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {sharedProfiles.map(p => (
@@ -163,11 +174,11 @@ function MealCard({
               </div>
             )}
 
-            {/* Sostituzioni badge */}
             {meal.substitutions.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1">
                 {meal.substitutions.map((sub, i) => (
-                  <span key={i} className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                  <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
+                    style={{ background: '#FEF3E8', color: '#B06010' }}>
                     {sub.originalIngredient.name} → {sub.replacementIngredient.name}
                   </span>
                 ))}
@@ -175,37 +186,23 @@ function MealCard({
             )}
           </div>
 
-          {/* Azioni + badge profilo personale */}
           <div className="flex flex-col items-end gap-1 shrink-0">
-            {/* Badge profilo (solo per card non-condivise in vista multi-profilo) */}
             {personalBadge && (
               <ProfileBadge name={personalBadge.name} avatar={personalBadge.avatar} />
             )}
-
             <div className="flex items-center gap-1">
-              {/* Ricetta */}
-              <button
-                onClick={onRecipe}
-                title="Genera ricetta con Claude AI"
-                className="p-1.5 rounded-lg hover:bg-green-50 text-gray-300 hover:text-primary-500 transition"
-              >
+              <button onClick={onRecipe} title="Genera ricetta" className="p-1.5 rounded-lg transition"
+                style={{ color: '#D7D1C5' }}>
                 <span className="text-base leading-none">🍳</span>
               </button>
-              {/* Sostituisci */}
-              <button
-                onClick={onSubstitute}
-                title="Sostituisci ingrediente"
-                className="p-1.5 rounded-lg hover:bg-amber-50 text-gray-300 hover:text-amber-500 transition"
-              >
+              <button onClick={onSubstitute} title="Sostituisci ingrediente" className="p-1.5 rounded-lg transition"
+                style={{ color: '#D7D1C5' }}>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                 </svg>
               </button>
-              {/* Espandi */}
-              <button
-                onClick={() => setExpanded(!expanded)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-300 hover:text-gray-600 transition"
-              >
+              <button onClick={() => setExpanded(!expanded)} className="p-1.5 rounded-lg transition"
+                style={{ color: '#D7D1C5' }}>
                 <svg className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -214,10 +211,9 @@ function MealCard({
           </div>
         </div>
 
-        {/* Ingredienti (espandibili) */}
         {expanded && (
-          <div className="mt-2 ml-7 border-t border-gray-100 pt-2">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Ingredienti</p>
+          <div className="mt-2 ml-7 pt-2" style={{ borderTop: '1px solid #EFEBE5' }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#9C9485' }}>Ingredienti</p>
             <div className="space-y-1.5">
               {meal.ingredients.map((ing, i) => {
                 const sub = meal.substitutions.find(s => s.originalIngredient.name === ing.name);
@@ -225,19 +221,14 @@ function MealCard({
                 return (
                   <div key={i} className="text-xs">
                     <div className="flex items-center justify-between">
-                      <span className={`font-medium ${sub ? 'text-amber-700' : 'text-gray-700'}`}>
-                        {effective.name}
-                      </span>
-                      <span className={`font-medium ${sub ? 'text-amber-600' : 'text-gray-400'}`}>
-                        {effective.quantity} {effective.unit}
-                      </span>
+                      <span className="font-medium" style={{ color: sub ? '#B06010' : '#3F3B30' }}>{effective.name}</span>
+                      <span className="font-medium" style={{ color: sub ? '#B06010' : '#9C9485' }}>{effective.quantity} {effective.unit}</span>
                     </div>
                     {sub && (
-                      <div className="mt-0.5">
-                        <span className="text-[9px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full">
-                          ↔ prima: {ing.name} {ing.quantity} {ing.unit}
-                        </span>
-                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full inline-block mt-0.5"
+                        style={{ background: '#FEF3E8', color: '#B06010' }}>
+                        ↔ prima: {ing.name} {ing.quantity} {ing.unit}
+                      </span>
                     )}
                   </div>
                 );
@@ -328,46 +319,38 @@ export default function PianoPage() {
 
   if (loading && allPlans.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center pb-20">
-        <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center pb-20" style={{ background: '#FBFAF8' }}>
+        <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#E07A5F', borderTopColor: 'transparent' }} />
         <BottomNav />
       </div>
     );
   }
 
-  // Empty state: nessun piano disponibile per nessun membro
   if (!primaryPlan) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-28">
-        <div className="max-w-lg mx-auto px-4 pt-8">
-          <h1 className="text-xl font-bold text-gray-900 mb-1">Piano alimentare</h1>
-          <p className="text-xs text-gray-400 mb-8">Carica il piano del tuo nutrizionista</p>
+      <div className="min-h-screen pb-28" style={{ background: '#FBFAF8' }}>
+        <div className="max-w-lg mx-auto px-4 pt-6">
+          <h1 className="font-serif text-[22px] font-bold mb-1" style={{ color: '#1A1812' }}>Piano alimentare</h1>
+          <p className="text-xs mb-6" style={{ color: '#9C9485' }}>Carica il piano del tuo nutrizionista</p>
 
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-8 text-center">
+          <div className="bg-white rounded-3xl p-8 text-center shadow-warm-sm" style={{ border: '1px solid #EFEBE5' }}>
             <div className="text-5xl mb-4">📋</div>
-            <h2 className="font-bold text-gray-800 text-lg mb-2">Nessun piano caricato</h2>
-            <p className="text-sm text-gray-400 mb-6">
-              Carica il PDF del piano alimentare del tuo nutrizionista. Claude AI estrarrà
-              automaticamente i pasti, gli ingredienti e le grammature.
+            <h2 className="font-serif font-bold text-lg mb-2" style={{ color: '#1A1812' }}>Nessun piano caricato</h2>
+            <p className="text-sm mb-6" style={{ color: '#9C9485' }}>
+              Carica il PDF del piano del tuo nutrizionista. Claude AI estrarrà automaticamente pasti, ingredienti e grammature.
             </p>
-            <button
-              onClick={() => setShowUpload(true)}
-              className="w-full py-3.5 bg-primary-600 text-white font-semibold rounded-2xl hover:bg-primary-700 transition flex items-center justify-center gap-2"
-            >
-              <span>🤖</span>
-              Carica con Claude AI
+            <button onClick={() => setShowUpload(true)}
+              className="w-full py-3.5 text-white font-semibold rounded-2xl transition flex items-center justify-center gap-2"
+              style={{ background: '#E07A5F' }}>
+              <span>✨</span> Carica con Claude AI
             </button>
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-3">
-            {[
-              { icon: '📄', label: 'Carica PDF' },
-              { icon: '✅', label: 'Spunta pasti' },
-              { icon: '🔄', label: 'Sostituisci' },
-            ].map(item => (
-              <div key={item.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+            {[{ icon: '📄', label: 'Carica PDF' }, { icon: '✅', label: 'Spunta pasti' }, { icon: '🔄', label: 'Sostituisci' }].map(item => (
+              <div key={item.label} className="bg-white rounded-2xl p-3 text-center shadow-warm-sm" style={{ border: '1px solid #EFEBE5' }}>
                 <p className="text-2xl mb-1">{item.icon}</p>
-                <p className="text-xs text-gray-500 font-medium">{item.label}</p>
+                <p className="text-xs font-medium" style={{ color: '#9C9485' }}>{item.label}</p>
               </div>
             ))}
           </div>
@@ -389,35 +372,30 @@ export default function PianoPage() {
 
   // ─── Vista principale ───────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen pb-28" style={{ background: '#FBFAF8' }}>
       {/* Header sticky */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white sticky top-0 z-10" style={{ borderBottom: '1px solid #EFEBE5' }}>
         <div className="max-w-lg mx-auto px-4 pt-4 pb-3">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-lg font-bold text-gray-900">Piano alimentare</h1>
-              {/* Mostra quanti piani sono caricati */}
+              <h1 className="font-serif text-[22px] font-bold" style={{ color: '#1A1812' }}>Piano alimentare</h1>
               {allPlans.length > 1 ? (
-                <p className="text-[11px] text-primary-600 font-medium">
+                <p className="text-[11px] font-medium" style={{ color: '#E07A5F' }}>
                   Vista famiglia · {allPlans.length} piani
                 </p>
               ) : primaryPlan.pdfName ? (
-                <p className="text-[11px] text-gray-400 truncate max-w-[200px]">{primaryPlan.pdfName}</p>
+                <p className="text-[11px] truncate max-w-[200px]" style={{ color: '#9C9485' }}>{primaryPlan.pdfName}</p>
               ) : null}
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowUpload(true)}
-                className="text-xs text-primary-600 font-medium px-3 py-1.5 rounded-xl border border-primary-200 hover:bg-primary-50 transition"
-              >
+              <button onClick={() => setShowUpload(true)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
+                style={{ background: '#FDE8E2', color: '#C0604A' }}>
                 {plan ? 'Aggiorna' : 'Carica'}
               </button>
               {plan && (
-                <button
-                  onClick={() => deletePlan(plan.id, household!.id)}
-                  className="text-xs text-red-400 font-medium px-2 py-1.5 rounded-xl hover:bg-red-50 transition"
-                  title="Elimina il mio piano"
-                >
+                <button onClick={() => deletePlan(plan.id, household!.id)}
+                  className="p-1.5 rounded-xl text-red-300 hover:text-red-400 transition">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
@@ -426,51 +404,44 @@ export default function PianoPage() {
             </div>
           </div>
 
-          {/* Week selector (basato sul piano primario) */}
+          {/* Week selector */}
           {primaryPlan.weeks.length > 1 && (
             <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
               {primaryPlan.weeks.map(w => (
-                <button
-                  key={w.weekNumber}
-                  onClick={() => {
-                    setSelectedWeek(w.weekNumber);
-                    setSelectedDay(w.days[0]?.dayIndex ?? 0);
-                  }}
-                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                    selectedWeek === w.weekNumber
-                      ? 'bg-primary-600 border-primary-600 text-white'
-                      : 'bg-white border-gray-200 text-gray-600'
-                  }`}
-                >
+                <button key={w.weekNumber}
+                  onClick={() => { setSelectedWeek(w.weekNumber); setSelectedDay(w.days[0]?.dayIndex ?? 0); }}
+                  className="shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shadow-warm-sm"
+                  style={{
+                    background: selectedWeek === w.weekNumber ? '#1A1812' : 'white',
+                    color: selectedWeek === w.weekNumber ? 'white' : '#9C9485',
+                  }}>
                   Settimana {w.weekNumber}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Day selector */}
+          {/* Day selector — pill style Frigora */}
           {currentWeek && (
-            <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
               {currentWeek.days.map(day => {
-                // Calcola completamento sommando dai combined slots di quel giorno
                 const daySlots = buildCombinedSlots(allPlans, members, selectedWeek, day.dayIndex);
                 const done = daySlots.filter(s =>
                   s.shared ? s.entries.every(e => e.meal.completed) : s.entry.meal.completed
                 ).length;
                 const tot = daySlots.length;
                 const allDone = done === tot && tot > 0;
+                const isSelected = selectedDay === day.dayIndex;
                 return (
-                  <button
-                    key={day.id}
-                    onClick={() => setSelectedDay(day.dayIndex)}
-                    className={`shrink-0 flex flex-col items-center px-3 py-2 rounded-xl transition-all ${
-                      selectedDay === day.dayIndex
-                        ? 'bg-primary-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
+                  <button key={day.id} onClick={() => setSelectedDay(day.dayIndex)}
+                    className="shrink-0 flex flex-col items-center px-3 py-2 rounded-xl transition-all"
+                    style={{
+                      background: isSelected ? '#E07A5F' : 'white',
+                      color: isSelected ? 'white' : '#9C9485',
+                      boxShadow: isSelected ? '0 4px 12px rgba(224,122,95,0.3)' : '0 1px 3px rgba(42,39,32,0.06)',
+                    }}>
                     <span className="text-[11px] font-semibold">{DAY_SHORT[day.dayIndex]}</span>
-                    <span className={`text-[9px] mt-0.5 ${selectedDay === day.dayIndex ? 'text-primary-100' : 'text-gray-400'}`}>
+                    <span className="text-[9px] mt-0.5" style={{ opacity: 0.8 }}>
                       {allDone ? '✓' : `${done}/${tot}`}
                     </span>
                   </button>
@@ -487,14 +458,11 @@ export default function PianoPage() {
           <>
             {/* Day header */}
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-900">{currentDayLabel}</h2>
+              <h2 className="font-serif font-bold text-lg" style={{ color: '#1A1812' }}>{currentDayLabel}</h2>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">{completedCount}/{totalCount} pasti</span>
-                <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary-500 rounded-full transition-all"
-                    style={{ width: totalCount ? `${(completedCount / totalCount) * 100}%` : '0%' }}
-                  />
+                <span className="text-xs" style={{ color: '#9C9485' }}>{completedCount}/{totalCount} pasti</span>
+                <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: '#EFEBE5' }}>
+                  <div className="h-full rounded-full transition-all" style={{ width: totalCount ? `${(completedCount / totalCount) * 100}%` : '0%', background: '#6B9E7A' }} />
                 </div>
               </div>
             </div>
