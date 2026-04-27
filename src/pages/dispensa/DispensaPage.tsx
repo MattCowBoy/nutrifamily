@@ -20,98 +20,11 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Altro': '📦',
 };
 
-function StockBar({ item }: { item: PantryItem }) {
-  const status = stockStatus(item);
-  const pct = Math.min(100, (item.quantity / item.initialQuantity) * 100);
-  const barColor = status === 'empty' ? '#EFEBE5' : status === 'low' ? '#F5C09A' : '#6B9E7A';
-  return (
-    <div className="mt-1.5">
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#EFEBE5' }}>
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
-      </div>
-      <div className="flex justify-between mt-0.5">
-        <span className="text-[10px]" style={{ color: '#9C9485' }}>
-          {item.quantity} / {item.initialQuantity} {item.unit}
-        </span>
-        {status === 'low' && <span className="text-[10px] font-medium" style={{ color: '#B06010' }}>Scorta bassa</span>}
-        {status === 'empty' && <span className="text-[10px] font-medium text-red-500">Esaurito</span>}
-      </div>
-    </div>
-  );
-}
 
-function ItemCard({ item, onEdit, onDelete, onAdjustQty }: {
-  item: PantryItem;
-  onEdit: (item: PantryItem) => void;
-  onDelete: (id: string) => void;
-  onAdjustQty: (id: string, delta: number) => void;
-}) {
-  const status = stockStatus(item);
-  const isExpiringSoon = item.expiryDate
-    ? new Date(item.expiryDate) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-    : false;
-  const step = item.unit === 'g' || item.unit === 'ml' ? 50 : 1;
-  const borderColor = status === 'empty' ? '#fecaca' : status === 'low' ? '#F5C09A' : '#EFEBE5';
-
-  return (
-    <div className="bg-white rounded-2xl transition-all shadow-warm-sm" style={{ border: `1px solid ${borderColor}` }}>
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-semibold text-sm" style={{ color: '#1A1812' }}>{item.name}</span>
-              {isExpiringSoon && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                  Scade presto
-                </span>
-              )}
-            </div>
-            {item.avgPrice != null && (
-              <p className="text-[11px] mt-0.5" style={{ color: '#9C9485' }}>
-                € {item.avgPrice.toFixed(2)} / {item.unit}
-                {item.priceHistory.length > 1 && (
-                  <span className="ml-1" style={{ color: '#D7D1C5' }}>· media {item.priceHistory.length} acq.</span>
-                )}
-              </p>
-            )}
-            {item.expiryDate && (
-              <p className="text-[11px] mt-0.5" style={{ color: '#9C9485' }}>
-                Scade: {new Date(item.expiryDate).toLocaleDateString('it-IT')}
-              </p>
-            )}
-            <StockBar item={item} />
-          </div>
-          <div className="flex flex-col gap-1 shrink-0">
-            <button onClick={() => onEdit(item)} className="p-1.5 rounded-lg transition" style={{ color: '#9C9485' }}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-            </button>
-            <button onClick={() => onDelete(item.id)} className="p-1.5 rounded-lg transition text-red-300 hover:text-red-400">
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mt-2.5">
-          <button onClick={() => onAdjustQty(item.id, -step)} disabled={item.quantity === 0}
-            className="w-8 h-8 rounded-xl disabled:opacity-40 flex items-center justify-center transition font-bold"
-            style={{ background: '#EFEBE5', color: '#3F3B30' }}>−</button>
-          <span className="text-sm font-semibold min-w-[60px] text-center" style={{ color: '#3F3B30' }}>{item.quantity} {item.unit}</span>
-          <button onClick={() => onAdjustQty(item.id, step)}
-            className="w-8 h-8 rounded-xl flex items-center justify-center transition font-bold"
-            style={{ background: '#EFEBE5', color: '#3F3B30' }}>+</button>
-          <span className="text-[10px] ml-auto" style={{ color: '#9C9485' }}>±{step}{item.unit}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function DispensaPage() {
   const { household } = useAuthStore();
-  const { items, loading, loadItems, addItem, updateItem, deleteItem, updateQuantity, batchUpdateItems } = usePantryStore();
+  const { items, loading, loadItems, addItem, updateItem, batchUpdateItems } = usePantryStore();
   const { claudeApiKey } = useSettingsStore();
 
   const [search, setSearch] = useState('');
@@ -223,16 +136,6 @@ export default function DispensaPage() {
     .sort((a, b) => a.name.localeCompare(b.name)),
     [items, filterCategory, filterLow, search]);
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, PantryItem[]>();
-    filtered.forEach(item => {
-      const list = map.get(item.category) ?? [];
-      list.push(item);
-      map.set(item.category, list);
-    });
-    return map;
-  }, [filtered]);
-
   const lowCount = items.filter(i => stockStatus(i) !== 'ok').length;
 
   const handleSave = async (item: PantryItem) => {
@@ -321,11 +224,12 @@ export default function DispensaPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content — 2-column emoji grid */}
       <div className="max-w-lg mx-auto px-4 pt-4">
         {loading && (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#E07A5F', borderTopColor: 'transparent' }} />
+            <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: '#E07A5F', borderTopColor: 'transparent' }} />
           </div>
         )}
 
@@ -335,7 +239,7 @@ export default function DispensaPage() {
             <h3 className="font-serif font-semibold text-lg mb-1" style={{ color: '#3F3B30' }}>Dispensa vuota</h3>
             <p className="text-sm mb-4" style={{ color: '#9C9485' }}>Fotografa uno scontrino o aggiungi manualmente</p>
             <button onClick={() => { setEditingItem(null); setShowSheet(true); }}
-              className="px-4 py-2 rounded-full text-sm font-semibold text-white"
+              className="px-5 py-2.5 rounded-full text-sm font-semibold text-white"
               style={{ background: '#E07A5F' }}>
               + Aggiungi manualmente
             </button>
@@ -348,36 +252,62 @@ export default function DispensaPage() {
           </div>
         )}
 
-        {!loading && grouped.size > 0 && (
-          <div className="space-y-5">
-            {Array.from(grouped.entries()).map(([category, catItems]) => (
-              <div key={category}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base">{CATEGORY_ICONS[category]}</span>
-                  <h2 className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#9C9485' }}>{category}</h2>
-                  <span className="text-xs" style={{ color: '#D7D1C5' }}>({catItems.length})</span>
-                </div>
-                <div className="space-y-2">
-                  {catItems.map(item => (
-                    <ItemCard key={item.id} item={item}
-                      onEdit={i => { setEditingItem(i); setShowSheet(true); }}
-                      onDelete={deleteItem}
-                      onAdjustQty={updateQuantity}
+        {!loading && filtered.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {filtered.map(item => {
+              const status = stockStatus(item);
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => { setEditingItem(item); setShowSheet(true); }}
+                  className="bg-white rounded-3xl p-4 text-left shadow-warm-sm relative hover:scale-[1.02] transition-transform"
+                  style={{
+                    border: `1px solid ${status === 'empty' ? '#fecaca' : status === 'low' ? '#F5C09A' : '#EFEBE5'}`,
+                  }}
+                >
+                  {/* Low stock dot */}
+                  {status !== 'ok' && (
+                    <div
+                      className="absolute top-3 right-3 w-2 h-2 rounded-full"
+                      style={{ background: status === 'empty' ? '#ef4444' : '#F5C09A' }}
                     />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  )}
+                  <div className="text-3xl mb-2">{CATEGORY_ICONS[item.category] ?? '🛒'}</div>
+                  <p className="font-semibold text-sm leading-tight" style={{ color: '#1A1812' }}>{item.name}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#9C9485' }}>
+                    {item.quantity} {item.unit}
+                  </p>
+                  {/* Mini stock bar */}
+                  <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ background: '#EFEBE5' }}>
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${Math.min(100, (item.quantity / item.initialQuantity) * 100)}%`,
+                        background: status === 'empty' ? '#EFEBE5' : status === 'low' ? '#F5C09A' : '#6B9E7A',
+                      }}
+                    />
+                  </div>
+                </button>
+              );
+            })}
 
-        {/* Add manually button at bottom */}
-        {!loading && items.length > 0 && (
-          <button onClick={() => { setEditingItem(null); setShowSheet(true); }}
-            className="w-full mt-4 py-3 rounded-2xl text-sm font-medium transition flex items-center justify-center gap-2"
-            style={{ border: '2px dashed #D7D1C5', color: '#9C9485', background: 'transparent' }}>
-            + Aggiungi manualmente
-          </button>
+            {/* Add item card */}
+            <button
+              onClick={() => { setEditingItem(null); setShowSheet(true); }}
+              className="rounded-3xl p-4 flex flex-col items-center justify-center gap-2 min-h-[110px] hover:scale-[1.02] transition-transform"
+              style={{ border: '2px dashed #D7D1C5', background: 'transparent' }}
+            >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: '#EFEBE5' }}>
+                <svg className="w-5 h-5" style={{ color: '#9C9485' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium text-center" style={{ color: '#9C9485' }}>
+                Aggiungi ingrediente
+              </span>
+            </button>
+          </div>
         )}
       </div>
 
